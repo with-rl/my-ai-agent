@@ -12,6 +12,7 @@ services: # dockers compose expects
     volumes:
       - ./backend/.env:/app/.env
       - ~/.config/gcloud:/root/.config/gcloud
+      - ./docker_ssd/blog_post:/app/docker_ssd/blog_post
   
   frontend:
     build:

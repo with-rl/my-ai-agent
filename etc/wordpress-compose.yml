@@ -1,0 +1,32 @@
+version: '3.8'
+name: wordpress
+services:
+  # MySQL database service
+  db:
+    image: mysql:8.0
+    container_name: wordpress_db
+    restart: always
+    volumes:
+      - ./docker_ssd/db_data:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress123
+      MYSQL_ROOT_PASSWORD: wordpress123
+
+  # WordPress service
+  wordpress:
+    image: wordpress:latest # or specify version like wordpress:6.4-php8.2-apache
+    container_name: wordpress_app
+    ports:
+      - "8080:80" # Access via http://localhost:8080 in browser
+    restart: always
+    volumes:
+      - ./docker_ssd/wordpress_data:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: db:3306 # Use service name 'db' as host
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress123
+      WORDPRESS_DB_NAME: wordpress
+    depends_on:
+      - db

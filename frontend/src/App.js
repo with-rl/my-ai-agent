@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import ChatBot from './components/ChatBot';
+import BlogManager from './components/BlogManager';
 
 function App() {
   const [activeTab, setActiveTab] = useState('chat');
@@ -26,7 +27,7 @@ function App() {
         <div className="header-content">
           <div className="header-text">
             <h1>My AI Agent</h1>
-            <p>Intelligent conversational assistant</p>
+            <p>Intelligent conversational assistant with blog management</p>
           </div>
           <button 
             onClick={toggleDarkMode} 
@@ -45,10 +46,17 @@ function App() {
         >
           💬 Chat
         </button>
+        <button 
+          className={`tab-btn ${activeTab === 'blog' ? 'active' : ''}`}
+          onClick={() => setActiveTab('blog')}
+        >
+          📝 Blog
+        </button>
       </nav>
 
       <main className="App-main">
         {activeTab === 'chat' && <ChatBot />}
+        {activeTab === 'blog' && <BlogManager />}
       </main>
     </div>
   );

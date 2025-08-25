@@ -254,4 +254,109 @@ export const chatAPI = {
   }
 };
 
+// Blog API functions
+export const blogAPI = {
+  /**
+   * Send a blog management request to the AI agent
+   * @param {string} message - The user's blog request
+   * @param {string|null} sessionId - Optional session ID for conversation continuity
+   * @returns {Promise} Response with AI message, session ID, and operation details
+   */
+  async sendBlogRequest(message, sessionId = null) {
+    try {
+      const payload = {
+        message: message.trim()
+      };
+
+      // Add session ID if provided
+      if (sessionId) {
+        payload.session_id = sessionId;
+      }
+
+      const response = await apiClient.post('/blog', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Blog API Error Details:', {
+        message: error.message,
+        code: error.code,
+        response: error.response?.data,
+        status: error.response?.status,
+        timeout: error.code === 'ECONNABORTED'
+      });
+      
+      // Handle different error scenarios
+      if (error.response) {
+        // Server responded with error status
+        throw new Error(error.response.data?.detail || `Blog operation failed (Status: ${error.response.status})`);
+      } else if (error.request) {
+        // Request made but no response received
+        if (error.code === 'ECONNABORTED') {
+          throw new Error('Blog request timed out. The operation may still be processing in the background.');
+        }
+        throw new Error(`Unable to connect to blog service at ${API_BASE_URL}. Please check your connection.`);
+      } else {
+        // Something else happened
+        throw new Error(`An unexpected error occurred: ${error.message}`);
+      }
+    }
+  },
+
+  /**
+   * List all blog posts
+   * @returns {Promise} Array of blog post information
+   */
+  async listBlogPosts() {
+    try {
+      const response = await apiClient.get('/blog/posts');
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        throw new Error(error.response.data?.detail || 'Failed to list blog posts');
+      } else {
+        throw new Error('Unable to connect to blog service');
+      }
+    }
+  },
+
+  /**
+   * Get specific blog post content
+   * @param {string} filename - The blog post filename
+   * @returns {Promise} Blog post content and metadata
+   */
+  async getBlogPost(filename) {
+    try {
+      const response = await apiClient.get(`/blog/posts/${filename}`);
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        if (error.response.status === 404) {
+          throw new Error('Blog post not found');
+        }
+        throw new Error(error.response.data?.detail || 'Failed to get blog post');
+      } else {
+        throw new Error('Unable to connect to blog service');
+      }
+    }
+  },
+
+  /**
+   * Stream blog requests using Server-Sent Events
+   * @param {string} message - The user's blog request
+   * @param {string|null} sessionId - Optional session ID for conversation continuity
+   * @param {function} onProgress - Callback for progress updates
+   * @param {function} onData - Callback for data updates
+   * @param {function} onComplete - Callback for completion
+   * @param {function} onError - Callback for errors
+   * @returns {Stream} Stream instance for manual control
+   */
+  streamBlogRequest(message, sessionId = null, { onProgress, onData, onComplete, onError }) {
+    const payload = {
+      message: message.trim(),
+      ...(sessionId && { session_id: sessionId })
+    };
+
+    return chatAPI.createStreamConnection('/blog/stream', payload, { onProgress, onData, onComplete, onError });
+  }
+};
+
 export default apiClient;
