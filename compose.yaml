@@ -1,0 +1,23 @@
+
+name: my-ai-agent
+services: # dockers compose expects
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    ports:
+      - 8887:80
+    restart: always
+    volumes:
+      - ./backend/.env:/app/.env
+      - ~/.config/gcloud:/root/.config/gcloud
+  
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: front
+    ports:
+      - 8888:80
+    restart: always
